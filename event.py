@@ -21,7 +21,7 @@ class MyEvent(object):
         return s
 
     def __repr__(self):
-        s = "{} <data size: {}>".format(self.tag, len(self.data))
+        s = "{} {} ({} bytes)".format(self.tag, self.src_path, len(self.data))
 
         return s
 

@@ -60,7 +60,6 @@ def main():
     while True:
         try:
             conn, addr = s.accept()
-            logging.info("Connected by %s:%d" % addr[:2])
         except socket.error:
             traceback.print_exc()
             continue

@@ -49,40 +49,46 @@ def connect_to_server():
         break
 
     if s is None:
-        logging.error("Could not connect to server")
+        logging.error("Failed to connect to the server {}:{}".format(g_args.server, g_args.port))
 
     return s
 
 
+def send_event(event):
+    s = None
+
+    retries = 3
+    while retries > 0:
+        retries -= 1
+
+        s = connect_to_server()
+        if s is not None:
+            break
+
+    if s is None:
+        return
+
+    retries = 3
+    while retries > 0:
+        retries -= 1
+
+        try:
+            s.sendall(str(event))
+
+            break
+        except socket.error:
+            traceback.print_exc()
+
+    s.close()
+
+
 class MyEventHandler(watchdog.events.FileSystemEventHandler):
-    def __init__(self):
-        self.socket = None
-
-    def __del__(self):
-        self.close_socket()
-
-    def ensure_socket(self):
-        retries = 3
-        while retries > 0:
-            if self.socket is None:
-                self.socket = connect_to_server()
-
-            if self.socket is not None:
-                break
-
-            retries -= 1
-
-    def close_socket(self):
-        if self.socket is not None:
-            self.socket.close()
-            self.socket = None
-
     def on_deleted(self, event):
         if type(event) is watchdog.events.FileDeletedEvent:
             logging.info(event)
 
             if should_sync(event.src_path):
-                self.send(MyEvent("DEL", event.src_path, ""))
+                send_event(MyEvent("DEL", event.src_path, ""))
 
     def on_created(self, event):
         if type(event) is watchdog.events.FileCreatedEvent:
@@ -90,7 +96,7 @@ class MyEventHandler(watchdog.events.FileSystemEventHandler):
 
             if should_sync(event.src_path):
                 with open(event.src_path, "r") as inf:
-                    self.send(MyEvent("NEW", event.src_path, inf.read()))
+                    send_event(MyEvent("NEW", event.src_path, inf.read()))
 
     def on_modified(self, event):
         if type(event) is watchdog.events.FileModifiedEvent:
@@ -98,34 +104,14 @@ class MyEventHandler(watchdog.events.FileSystemEventHandler):
 
             if should_sync(event.src_path):
                 with open(event.src_path, "r") as inf:
-                    self.send(MyEvent("MOD", event.src_path, inf.read()))
+                    send_event(MyEvent("MOD", event.src_path, inf.read()))
 
     def on_moved(self, event):
         if type(event) is watchdog.events.FileMovedEvent:
             logging.info(event)
 
             if should_sync(event.src_path):
-                self.send(MyEvent("MOV", event.src_path, event.dest_path))
-
-    def send(self, event):
-        retries = 3
-        while retries > 0:
-            retries -= 1
-
-            if self.socket is None:
-                self.ensure_socket()
-
-            if self.socket is None:
-                continue
-
-            try:
-                self.socket.sendall(str(event))
-
-                break
-            except socket.error:
-                traceback.print_exc()
-
-                self.close_socket()
+                send_event(MyEvent("MOV", event.src_path, event.dest_path))
 
 
 def main():
