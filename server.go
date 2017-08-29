@@ -49,7 +49,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Illege JSON data: %v", err)
 
-		w.WriteHeader(http.StatusUnprocessableEntity)
+		w.WriteHeader(422) // http.StatusUnprocessableEntity
 		return
 	}
 	defer r.Body.Close()
