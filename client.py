@@ -40,7 +40,7 @@ class FileChangedEventHandler(watchdog.events.FileSystemEventHandler):
             logging.info(event)
 
             if should_sync(event.src_path):
-                Q.push_event(event.FileChangedEvent("DEL", event.src_path, ""))
+                Q.push_event(E.FileChangedEvent("DEL", event.src_path, ""))
 
     def on_created(self, event):
         if isinstance(event, watchdog.events.FileCreatedEvent):
