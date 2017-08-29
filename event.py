@@ -1,46 +1,53 @@
-import logging
+import json
+import thread
+
+from collections import deque
 
 
-class MyEvent(object):
+class FileChangedEvent(object):
     def __init__(self, tag, src_path, data):
         self.tag = tag
         self.src_path = src_path
         self.data = data
 
-    def __str__(self):
-        size = 3 + 8 * 3 + len(self.src_path) + len(self.data)
-
-        s = ""
-        s += "%08d" % size
-        s += self.tag
-        s += "%08d" % len(self.src_path)
-        s += self.src_path
-        s += "%08d" % len(self.data)
-        s += self.data
-
-        return s
-
     def __repr__(self):
-        s = "{} {} ({} bytes)".format(self.tag, self.src_path, len(self.data))
-
-        return s
+        return "{} {} ({} bytes)".format(self.tag, self.src_path, len(self.data))
 
 
-def decode_event(s):
-    try:
-        tag = s[:3]
-        s = s[3:]
+def as_file_changed_event(dct):
+    return FileChangedEvent(dct[u"tag"], dct[u"sourcePath"], dct[u"data"])
 
-        size = int(s[:8])
-        s = s[8:]
-        src_path = s[:size]
-        s = s[size:]
 
-        size = int(s[:8])
-        s = s[8:]
+def jdecode(raw):
+    return json.loads(raw, object_hook=as_file_changed_event)
 
-        return MyEvent(tag, src_path, s)
-    except Exception as e:
-        logging.error(e)
 
-        return MyEvent("", "", "")
+def jencode(event):
+    return json.dumps({
+        "tag": event.tag,
+        "sourcePath": event.src_path,
+        "data": event.data,
+    })
+
+
+class Queue(object):
+    def __init__(self):
+        self.lock = thread.allocate_lock()
+        self.deque = deque()
+
+    def push_event(self, event):
+        self.lock.acquire()
+        self.deque.append(event)
+        self.lock.release()
+
+    def put_back_event(self, event):
+        self.lock.acquire()
+        self.deque.appendleft(event)
+        self.lock.release()
+
+    def pop_event(self):
+        self.lock.acquire()
+        event = None if len(self.deque) == 0 else self.deque.popleft()
+        self.lock.release()
+
+        return event
