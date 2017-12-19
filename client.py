@@ -18,6 +18,10 @@ Q = E.Queue()
 
 
 def should_sync(fpath):
+    for ignored in config.ignored_path_patterns:
+        if ignored in fpath:
+            return False
+
     return os.path.splitext(fpath.lower())[1] in config.file_types
 
 
