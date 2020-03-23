@@ -8,6 +8,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"runtime"
+	"strings"
 )
 
 var basePathPtr *string
@@ -20,6 +22,15 @@ type FileChangedEvent struct {
 }
 
 func handleEvents(event *FileChangedEvent) {
+	if runtime.GOOS != "windows" {
+		event.Path = strings.ReplaceAll(event.Path, `\`, "/")
+		if event.Tag == "MOV" {
+			event.Data = strings.ReplaceAll(event.Data, `\`, "/")
+		} else {
+			event.Data = strings.ReplaceAll(event.Data, "\r\n", "\n")
+		}
+	}
+
 	log.Printf("%s %s (%d bytes)", event.Tag, event.Path, len(event.Data))
 
 	var err error
