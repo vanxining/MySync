@@ -77,7 +77,7 @@ def main():
 
     parser = argparse.ArgumentParser(prog="MySync", usage="Sync files between local workstation and remote server")
     parser.add_argument("--path", "-p", type=str, default=".", nargs="?", help="the path to the directory to watch")
-    parser.add_argument("--server", "-s", type=str, default="dev", nargs="?", help="the remote server")
+    parser.add_argument("--server", "-s", type=str, default="elk", nargs="?", help="the remote server")
     parser.add_argument("--port", "-P", type=int, default=58667, nargs="?", help="the remote port")
     args = parser.parse_args()
 

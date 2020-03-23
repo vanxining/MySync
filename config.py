@@ -4,9 +4,16 @@ file_types = {
     ".c",    
     ".cpp",    
     ".h",    
+    ".hpp",    
     ".inl",    
     ".proto",
+    ".am",
+    ".xsd",
     ".avpr",
+    ".cxx",
+    ".hxx",
+    ".txx",
+    ".ixx",
 }
 
 ignored_path_patterns = {
