@@ -1,5 +1,5 @@
 import json
-import thread
+import _thread
 
 from collections import deque
 
@@ -32,7 +32,7 @@ def jencode(event):
 
 class Queue(object):
     def __init__(self):
-        self.lock = thread.allocate_lock()
+        self.lock = _thread.allocate_lock()
         self.deque = deque()
 
     def push_event(self, event):

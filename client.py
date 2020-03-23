@@ -1,11 +1,11 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 import argparse
 import logging
 import os
 import time
 import traceback
-import urllib2
+import urllib.request
 
 import watchdog.events
 import watchdog.observers
@@ -26,11 +26,11 @@ def should_sync(fpath):
 
 
 def send_event(url, event):
-    data_json = E.jencode(event)
+    data_json = E.jencode(event).encode("utf8")
     try:
-        req = urllib2.Request(url, data=data_json, headers={"Content-Type": "application/json"})
-        response_stream = urllib2.urlopen(req)
-        logging.debug(response_stream.read())
+        req = urllib.request.Request(url, data=data_json, headers={"Content-Type": "application/json"})
+        response_stream = urllib.request.urlopen(req)
+        logging.debug(response_stream.read().decode("utf8"))
 
         return True
     except:
@@ -51,16 +51,18 @@ class FileChangedEventHandler(watchdog.events.FileSystemEventHandler):
             logging.info(event)
 
             if should_sync(event.src_path):
-                with open(event.src_path, "r") as inf:
-                    Q.push_event(E.FileChangedEvent("NEW", event.src_path, inf.read()))
+                with open(event.src_path, "rb") as inf:
+                    Q.push_event(E.FileChangedEvent("NEW", event.src_path,
+                        inf.read().decode(config.input_file_encoding)))
 
     def on_modified(self, event):
         if isinstance(event, watchdog.events.FileModifiedEvent):
             logging.info(event)
 
             if should_sync(event.src_path):
-                with open(event.src_path, "r") as inf:
-                    Q.push_event(E.FileChangedEvent("MOD", event.src_path, inf.read()))
+                with open(event.src_path, "rb") as inf:
+                    Q.push_event(E.FileChangedEvent("MOD", event.src_path,
+                        inf.read().decode(config.input_file_encoding)))
 
     def on_moved(self, event):
         if isinstance(event, watchdog.events.FileMovedEvent):
@@ -87,6 +89,8 @@ def main():
     observer = watchdog.observers.Observer()
     observer.schedule(event_handler, args.path, recursive=True)
     observer.start()
+
+    print("Server URL:", url)
 
     try:
         while True:

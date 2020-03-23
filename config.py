@@ -1,3 +1,5 @@
+input_file_encoding = "utf8"
+
 file_types = {
     ".py",    
     ".go",    
