@@ -1,13 +1,13 @@
 input_file_encoding = "utf8"
 
 file_types = {
-    ".py",    
-    ".go",    
-    ".c",    
-    ".cpp",    
-    ".h",    
-    ".hpp",    
-    ".inl",    
+    ".py",
+    ".go",
+    ".c",
+    ".cpp",
+    ".h",
+    ".hpp",
+    ".inl",
     ".proto",
     ".am",
     ".xsd",
@@ -16,10 +16,14 @@ file_types = {
     ".hxx",
     ".txx",
     ".ixx",
+    ".sh",
 }
 
 ignored_path_patterns = {
-	"/.git/",
-	"/.idea/",
-	"/cmake-build-debug/",
+    "/.git/",
+    "/.idea/",
+    "/.vs/",
+    "/.vscode/",
+    "/cmake-build-debug/",
+    "/logs/",
 }
