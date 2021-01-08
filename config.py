@@ -17,6 +17,7 @@ file_types = {
     ".txx",
     ".ixx",
     ".sh",
+    ".sql",
 }
 
 ignored_path_patterns = {

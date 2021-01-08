@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import gzip
 import logging
 import os
 import time
@@ -28,7 +29,11 @@ def should_sync(fpath):
 def send_event(url, event):
     data_json = E.jencode(event).encode("utf8")
     try:
-        req = urllib.request.Request(url, data=data_json, headers={"Content-Type": "application/json"})
+        headers = {
+            "Content-Type": "application/json",
+            "Content-Encoding": "gzip"
+        }
+        req = urllib.request.Request(url, data=gzip.compress(data_json), headers=headers)
         response_stream = urllib.request.urlopen(req)
         logging.debug(response_stream.read().decode("utf8"))
 
