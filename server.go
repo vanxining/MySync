@@ -1,6 +1,7 @@
 package main
 
 import (
+	"compress/gzip"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -13,6 +14,20 @@ import (
 )
 
 var basePathPtr *string
+
+func byteCount(b int64) string {
+	const unit = 1024
+	if b < unit {
+		return fmt.Sprintf("%d B", b)
+	}
+	div, exp := int64(unit), 0
+	for n := b / unit; n >= unit; n /= unit {
+		div *= unit
+		exp++
+	}
+	return fmt.Sprintf("%.1f %ciB",
+		float64(b)/float64(div), "KMGTPE"[exp])
+}
 
 // FileChangedEvent represents a file changed event occurred remotely.
 type FileChangedEvent struct {
@@ -31,7 +46,7 @@ func handleEvents(event *FileChangedEvent) {
 		}
 	}
 
-	log.Printf("%s %s (%d bytes)", event.Tag, event.Path, len(event.Data))
+	log.Printf("%s %s (%s)", event.Tag, event.Path, byteCount(int64(len(event.Data))))
 
 	var err error
 
@@ -55,12 +70,21 @@ func handleEvents(event *FileChangedEvent) {
 func handler(w http.ResponseWriter, r *http.Request) {
 	var event FileChangedEvent
 
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&event)
+	decompressor, err := gzip.NewReader(r.Body)
+	if err != nil {
+		log.Printf("Illege Gzip data: %v", err)
+
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		return
+	}
+	defer decompressor.Close()
+
+	decoder := json.NewDecoder(decompressor)
+	err = decoder.Decode(&event)
 	if err != nil {
 		log.Printf("Illege JSON data: %v", err)
 
-		w.WriteHeader(422) // http.StatusUnprocessableEntity
+		w.WriteHeader(http.StatusUnprocessableEntity)
 		return
 	}
 	defer r.Body.Close()
