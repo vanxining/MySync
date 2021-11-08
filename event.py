@@ -1,4 +1,5 @@
 import json
+import os
 import _thread
 
 from collections import deque
@@ -7,8 +8,12 @@ from collections import deque
 class FileChangedEvent(object):
     def __init__(self, tag, src_path, data):
         self.tag = tag
-        self.src_path = src_path
         self.data = data
+
+        cwd = os.getcwd()
+        if not cwd.endswith("/"):
+            cwd += "/"
+        self.src_path = src_path.removeprefix(cwd)
 
     def __repr__(self):
         return "{} {} ({} bytes)".format(self.tag, self.src_path, len(self.data))
