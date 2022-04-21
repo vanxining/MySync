@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"compress/gzip"
 	"encoding/json"
 	"flag"
@@ -29,6 +30,15 @@ func byteCount(b int64) string {
 		float64(b)/float64(div), "KMGTPE"[exp])
 }
 
+func isFileNotChanged(path string, content []byte) bool {
+	b, err := ioutil.ReadFile(path)
+	if err != nil {
+		return false
+	}
+
+	return bytes.Compare(b, content) == 0
+}
+
 // FileChangedEvent represents a file changed event occurred remotely.
 type FileChangedEvent struct {
 	Tag  string `json:"tag"`
@@ -52,7 +62,12 @@ func handleEvents(event *FileChangedEvent) {
 
 	switch event.Tag {
 	case "NEW", "MOD":
-		err = ioutil.WriteFile(event.Path, []byte(event.Data), 0644)
+		b := []byte(event.Data)
+		if isFileNotChanged(event.Path, b) {
+			log.Printf("File is not changed")
+			return
+		}
+		err = ioutil.WriteFile(event.Path, b, 0644)
 	case "MOV":
 		err = os.Rename(event.Path, event.Data)
 	case "DEL":
