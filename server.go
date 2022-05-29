@@ -64,7 +64,7 @@ func handleEvents(event *FileChangedEvent) {
 	case "NEW", "MOD":
 		b := []byte(event.Data)
 		if isFileNotChanged(event.Path, b) {
-			log.Printf("File is not changed")
+			log.Printf("  File is not changed")
 			return
 		}
 		err = ioutil.WriteFile(event.Path, b, 0644)
