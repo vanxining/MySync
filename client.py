@@ -19,6 +19,8 @@ Q = E.Queue()
 
 
 def should_sync(fpath):
+    fpath = fpath.replace('\\', '/')
+
     for ignored in config.ignored_path_patterns:
         if ignored in fpath:
             return False
@@ -56,18 +58,24 @@ class FileChangedEventHandler(watchdog.events.FileSystemEventHandler):
             logging.info(event)
 
             if should_sync(event.src_path):
-                with open(event.src_path, "rb") as inf:
-                    Q.push_event(E.FileChangedEvent("NEW", event.src_path,
-                        inf.read().decode(config.input_file_encoding)))
+                try:
+                    with open(event.src_path, "rb") as inf:
+                        Q.push_event(E.FileChangedEvent("NEW", event.src_path,
+                            inf.read().decode(config.input_file_encoding)))
+                except Exception:
+                    traceback.print_exc()
 
     def on_modified(self, event):
         if isinstance(event, watchdog.events.FileModifiedEvent):
             logging.info(event)
 
             if should_sync(event.src_path):
-                with open(event.src_path, "rb") as inf:
-                    Q.push_event(E.FileChangedEvent("MOD", event.src_path,
-                        inf.read().decode(config.input_file_encoding)))
+                try:
+                    with open(event.src_path, "rb") as inf:
+                        Q.push_event(E.FileChangedEvent("MOD", event.src_path,
+                            inf.read().decode(config.input_file_encoding)))
+                except Exception:
+                    traceback.print_exc()
 
     def on_moved(self, event):
         if isinstance(event, watchdog.events.FileMovedEvent):

@@ -26,5 +26,7 @@ ignored_path_patterns = {
     "/.vs/",
     "/.vscode/",
     "/cmake-build-debug/",
+    "/cmake-build-debug-mingw/",
     "/logs/",
+    "/3rd/",
 }
