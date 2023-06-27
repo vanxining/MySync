@@ -109,7 +109,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	basePathPtr = flag.String("path", ".", "the path to the directory to sync")
-	portPtr := flag.Int("port", 58667, "the remote port")
+	portPtr := flag.Int("port", 58668, "the remote port")
+	flag.Parse()
 
 	http.HandleFunc("/", handler)
 
